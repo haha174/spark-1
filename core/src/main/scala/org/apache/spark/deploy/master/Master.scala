@@ -50,19 +50,29 @@ private[deploy] class Master(
     val conf: SparkConf)
   extends ThreadSafeRpcEndpoint with Logging with LeaderElectable {
 
-  private val forwardMessageThread =
-    ThreadUtils.newDaemonSingleThreadScheduledExecutor("master-forward-message-thread")
-
+  //  master 中的一个发送消息的守护单线程
+  private val forwardMessageThread = ThreadUtils.newDaemonSingleThreadScheduledExecutor("master-forward-message-thread")
+  // generate hadoop and hive  conf
   private val hadoopConf = SparkHadoopUtil.get.newConfiguration(conf)
 
   // For application IDs
   private def createDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US)
-
+  //  worker time out, if heartbeat time out will remove from the worker list
   private val workerTimeoutMs = conf.get(WORKER_TIMEOUT) * 1000
+  // The maximum number of completed applications to display.
+  // Older applications will be dropped from the UI to maintain this limit
   private val retainedApplications = conf.get(RETAINED_APPLICATIONS)
+
+  //  The maximum number of completed applications to display.
+  //  Older applications will be dropped from the UI to maintain this limit.
   private val retainedDrivers = conf.get(RETAINED_DRIVERS)
+  //  Remove heartbeat interval of worker
+  //  if there are not heartbeat on the time
+  //  which is more than WORKER_TIMEOUT*REAPER_ITERATIONS  will remove from worker list
   private val reaperIterations = conf.get(REAPER_ITERATIONS)
+  // Set to FILESYSTEM to enable single-node recovery mode (default: NONE).
   private val recoveryMode = conf.get(RECOVERY_MODE)
+
   private val maxExecutorRetries = conf.get(MAX_EXECUTOR_RETRIES)
 
   val workers = new HashSet[WorkerInfo]
@@ -116,6 +126,8 @@ private[deploy] class Master(
   // As a temporary workaround before better ways of configuring memory, we allow users to set
   // a flag that will perform round-robin scheduling across the nodes (spreading out each app
   // among all the nodes) instead of trying to consolidate each app onto a small # of nodes.
+
+  //  Whether the standalone cluster manager should spread applications out across nodes
   private val spreadOutApps = conf.get(SPREAD_OUT_APPS)
 
   // Default maxCores for applications that don't specify it (i.e. pass Int.MaxValue)
@@ -150,6 +162,7 @@ private[deploy] class Master(
       logInfo(s"Spark Master is acting as a reverse proxy. Master, Workers and " +
        s"Applications UIs are available at $masterWebUiUrl")
     }
+    // add another parallel task to check worker heartbeat
     checkForWorkerTimeOutTask = forwardMessageThread.scheduleAtFixedRate(
       () => Utils.tryLogNonFatalError { self.send(CheckForWorkerTimeOut) },
       0, workerTimeoutMs, TimeUnit.MILLISECONDS)
