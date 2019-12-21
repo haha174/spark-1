@@ -41,26 +41,43 @@ import org.apache.spark.util.Utils
  */
 private[deploy] class SparkSubmitArguments(args: Seq[String], env: Map[String, String] = sys.env)
   extends SparkSubmitArgumentsParser with Logging {
+  // yarn ks8 mesos ...
   var master: String = null
+  // client cluster
   var deployMode: String = null
+  // 每个executor 需要申请的memory
   var executorMemory: String = null
+  // 每个executor 需要的cpu
   var executorCores: String = null
+  // 这个cpu 需要的executor 总的cpu 核心数量    executor数量 等于totalExecutorCores/executorCores standalone 如果没有设置，取默认的内核数
   var totalExecutorCores: String = null
+  //  --files /tmp/fileName  制定配置文件的方式
   var propertiesFile: String = null
+  //  driver 需要的memory
   var driverMemory: String = null
+  //
   var driverExtraClassPath: String = null
+  //
   var driverExtraLibraryPath: String = null
+  // 提交JVM 参数
   var driverExtraJavaOptions: String = null
+  // 提交job  队列
   var queue: String = null
+  // 集群中启动的executor总数   yarn 集群中才有用  该选项默认值是2
   var numExecutors: String = null
   var files: String = null
   var archives: String = null
+  // 运行的主方法
   var mainClass: String = null
   var primaryResource: String = null
+  // job 名字
   var name: String = null
   var childArgs: ArrayBuffer[String] = new ArrayBuffer[String]()
+  // jar包的路径 可以在本地或者hdfs
   var jars: String = null
+
   var packages: String = null
+
   var repositories: String = null
   var ivyRepoPath: String = null
   var ivySettingsPath: Option[String] = None

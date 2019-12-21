@@ -17,6 +17,7 @@
 
 package org.apache.spark.examples;
 
+import org.apache.spark.SparkConf;
 import scala.Tuple2;
 import scala.Tuple3;
 
@@ -36,7 +37,9 @@ import java.util.regex.Pattern;
  *
  * Usage: JavaLogQuery [logFile]
  */
-public final class JavaLogQuery {
+public final class JavaLogQuery implements Serializable{
+
+  private static final long serialVersionUID = 4125096758372084309L;
 
   public static final List<String> exampleApacheLogs = Arrays.asList(
     "10.10.10.10 - \"FRED\" [18/Jan/2013:17:56:07 +1100] \"GET http://images.com/2013/Generic.jpg " +
@@ -98,11 +101,16 @@ public final class JavaLogQuery {
   }
 
   public static void main(String[] args) {
-    SparkSession spark = SparkSession
-      .builder()
+    SparkSession spark = SparkSession.builder()
+       .master("local")
+       .config("spark.cores.max",1)
+            .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+       .config("spark.executor.cores",1)
+       .config("spark.default.parallelism",1)
+       .config("spark.executor.memory","471859200")
+       .config("spark.testing.memory", "536870912")
       .appName("JavaLogQuery")
       .getOrCreate();
-
     JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
 
     JavaRDD<String> dataSet = (args.length == 1) ? jsc.textFile(args[0]) : jsc.parallelize(exampleApacheLogs);
@@ -116,6 +124,5 @@ public final class JavaLogQuery {
     for (Tuple2<?,?> t : output) {
       System.out.println(t._1() + "\t" + t._2());
     }
-    spark.stop();
   }
 }

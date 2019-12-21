@@ -987,6 +987,7 @@ object SparkSubmit extends CommandLineUtils with Logging {
       self =>
 
       override protected def parseArguments(args: Array[String]): SparkSubmitArguments = {
+        //  SparkSubmitArguments  参数类  初始化参数类的对象
         new SparkSubmitArguments(args) {
           override protected def logInfo(msg: => String): Unit = self.logInfo(msg)
 

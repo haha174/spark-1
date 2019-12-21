@@ -59,6 +59,9 @@ abstract class Broadcast[T: ClassTag](val id: Long) extends Serializable with Lo
   /**
    * Flag signifying whether the broadcast variable is valid
    * (that is, not already destroyed) or not.
+   * volatile就是内存可见性：通俗来说就是，线程A对一个volatile变量的修改
+   * 对于其它线程来说是可见的，即线程每次获取volatile变量的值都是最新的
+   * 一个标志位判断是否有效
    */
   @volatile private var _isValid = true
 

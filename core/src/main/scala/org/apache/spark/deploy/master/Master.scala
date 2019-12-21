@@ -50,7 +50,7 @@ private[deploy] class Master(
     val conf: SparkConf)
   extends ThreadSafeRpcEndpoint with Logging with LeaderElectable {
 
-  //  master 中的一个发送消息的守护单线程
+  //  master 中的一个发送消息的守护单线程 周期性检测worker 节点状态
   private val forwardMessageThread = ThreadUtils.newDaemonSingleThreadScheduledExecutor("master-forward-message-thread")
   // generate hadoop and hive  conf
   private val hadoopConf = SparkHadoopUtil.get.newConfiguration(conf)

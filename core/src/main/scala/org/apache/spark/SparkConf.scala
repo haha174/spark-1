@@ -58,8 +58,19 @@ class SparkConf(loadDefaults: Boolean) extends Cloneable with Logging with Seria
   /** Create a SparkConf that loads defaults from system properties and the classpath */
   def this() = this(true)
 
+  /*
+   *spark 配置属性其实存在一个线程安全的hash map中的
+   *
+   */
   private val settings = new ConcurrentHashMap[String, String]()
 
+
+  /**
+   * spark 配置主要来自于三种
+   * 一是系统参数
+   * 二是Spark Conf api 进行设置
+   * 三是从其他Spark Conf 进行克隆
+   */
   @transient private lazy val reader: ConfigReader = {
     val _reader = new ConfigReader(new SparkConfigProvider(settings))
     _reader.bindEnv((key: String) => Option(getenv(key)))
